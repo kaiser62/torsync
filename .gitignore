@@ -7,3 +7,6 @@ secrets/
 .swarm/
 ruvector.db
 *.db
+[INFO] Recording command outcome: printf
+
+[OK] Command outcome recorded
