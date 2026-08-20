@@ -1,0 +1,5 @@
+stack/prowlarr/
+stack/cross-seed/
+*.env
+.env
+secrets/
