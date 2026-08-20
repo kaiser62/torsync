@@ -16,14 +16,17 @@ services:
     networks:
       - torsync
 
-  flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    container_name: torsync-flaresolverr
+  # Cloudflare solver. FlareSolverr cannot clear TorrentBD's 2026 Managed
+  # Challenge (it fails on TLS fingerprinting, not cookies), so we run Byparr,
+  # which drives a real Camoufox browser and speaks the same API on port 8191.
+  byparr:
+    image: ghcr.io/thephaseless/byparr:latest
+    container_name: torsync-byparr
     environment:
-      - LOG_LEVEL=info
       - TZ=Asia/Dhaka
     ports:
       - "8191:8191"
+    shm_size: 2gb
     restart: unless-stopped
     networks:
       - torsync
