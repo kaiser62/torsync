@@ -13,6 +13,9 @@ set -a; . ./.env; set +a
 
 : "${PROWLARR_URL:?}" "${PROWLARR_API_KEY:?}"
 
+# Git Bash on Windows ships "python"; most Linux distros ship "python3".
+PY=$(command -v python3 || command -v python) || { echo "python not found" >&2; exit 1; }
+
 api() {
   local method=$1 path=$2
   shift 2
@@ -23,7 +26,7 @@ api() {
 
 # find_id <indexer name> -> prints existing id, or nothing
 find_id() {
-  api GET /api/v1/indexer | python3 -c '
+  api GET /api/v1/indexer | "$PY" -c '
 import sys, json
 want = sys.argv[1]
 for x in json.load(sys.stdin):
@@ -37,7 +40,7 @@ for x in json.load(sys.stdin):
 upsert() {
   local name=$1 deffile=$2; shift 2
   local payload
-  payload=$(python3 -c '
+  payload=$("$PY" -c '
 import sys, json
 name, deffile = sys.argv[1], sys.argv[2]
 fields = [{"name": "definitionFile", "value": deffile}]
@@ -60,7 +63,7 @@ print(json.dumps({
   id=$(find_id "$name")
   if [ -n "$id" ]; then
     echo "updating $name (id $id)"
-    payload=$(python3 -c '
+    payload=$("$PY" -c '
 import sys, json
 d = json.loads(sys.stdin.read()); d["id"] = int(sys.argv[1]); print(json.dumps(d))
 ' "$id" <<<"$payload")
@@ -92,7 +95,7 @@ fi
 
 echo
 echo "--- indexers ---"
-api GET /api/v1/indexer | python3 -c '
+api GET /api/v1/indexer | "$PY" -c '
 import sys, json
 for x in json.load(sys.stdin):
     print(f'"'"'{x["id"]:>3}  {x["name"]:<16} enabled={x["enable"]}'"'"')
