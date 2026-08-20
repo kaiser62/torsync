@@ -3,3 +3,7 @@ stack/cross-seed/
 *.env
 .env
 secrets/
+.claude-flow/
+.swarm/
+ruvector.db
+*.db
