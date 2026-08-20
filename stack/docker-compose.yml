@@ -20,13 +20,30 @@ services:
   # Challenge (it fails on TLS fingerprinting, not cookies), so we run Byparr,
   # which drives a real Camoufox browser and speaks the same API on port 8191.
   byparr:
-    image: ghcr.io/thephaseless/byparr:latest
+    # Upstream image plus a patch that makes the `cookies` parameter work.
+    build:
+      context: ./byparr
+    image: torsync/byparr:patched
     container_name: torsync-byparr
     environment:
       - TZ=Asia/Dhaka
     ports:
       - "8191:8191"
     shm_size: 2gb
+    restart: unless-stopped
+    networks:
+      - torsync
+
+  # Byparr clears Cloudflare but drops the "cookies" request parameter, so it
+  # cannot serve cookie-authenticated trackers like TorrentBD. Solvearr forwards
+  # the real request with a tampered TLS fingerprint, preserving cookies.
+  solvearr:
+    image: nabilak/solvearr:latest
+    container_name: torsync-solvearr
+    environment:
+      - TZ=Asia/Dhaka
+    ports:
+      - "8192:8191"
     restart: unless-stopped
     networks:
       - torsync
